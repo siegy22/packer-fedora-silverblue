@@ -1,0 +1,73 @@
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+metadata:
+  name: silverblue
+  labels:
+    app: silverblue
+spec:
+  dataVolumeTemplates:
+  - apiVersion: cdi.kubevirt.io/v1beta1
+    kind: DataVolume
+    metadata:
+      name: silverblue
+    spec:
+      storage:
+        accessModes:
+          - ReadWriteOnce
+        volumeMode: Filesystem
+        resources:
+          requests:
+            storage: 50Gi
+      source:
+        registry:
+          url: "docker://docker.io/siegy22/fedora-silverblue"
+  runStrategy: Always
+  template:
+    metadata:
+      labels:
+        kubevirt.io/domain: silverblue
+    spec:
+      terminationGracePeriodSeconds: 0
+      architecture: 'amd64'
+      domain:
+        features:
+          smm:
+            enabled: true
+        firmware:
+          bootloader:
+            efi:
+              secureBoot: true
+        cpu:
+          cores: 4
+        memory:
+          guest: 16Gi
+        devices:
+          rng: {}
+          disks:
+          - disk:
+              bus: virtio
+            name: rootdisk
+          - disk:
+              bus: virtio
+            name: cloudinitdisk
+          interfaces:
+          - masquerade: {}
+            name: default
+            model: virtio
+      networks:
+      - name: default
+        pod: {}
+      volumes:
+      - dataVolume:
+          name: silverblue
+        name: rootdisk
+      - cloudInitNoCloud:
+          userData: |-
+            #cloud-config
+            users:
+              - name: user1
+                gecos: User 1
+                primary_group: user1
+                groups: wheel
+                passwd: $y$j9T$PleojMETxyMENIpMqkPUk0$K.o.tBKBeb5gC1XwA0nQsHxpSit6Rh5Z8.klELjJh76
+        name: cloudinitdisk
