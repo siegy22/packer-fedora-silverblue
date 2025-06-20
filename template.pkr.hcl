@@ -29,7 +29,8 @@ source "qemu" "silverblue" {
   disk_size      = "50G"
   format         = "qcow2"
   accelerator    = "kvm"
-  boot_wait      = "2s"
+  efi_boot       = true
+  boot_wait      = "10s"
   boot_command   = ["<up>e<down><down><end> inst.text inst.ks=cdrom:/ks.cfg<f10>"]
 }
 
